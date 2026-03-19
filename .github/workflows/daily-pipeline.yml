@@ -2,23 +2,22 @@ name: Daily Macro Pipeline
 
 on:
   schedule:
-    - cron: "5 5 * * *"   # every day at 05:05 UTC
-  workflow_dispatch:       # allows manual trigger
+    - cron: "5 5 * * *"
+  workflow_dispatch:
 
 permissions:
-  contents: write   # <— allow this workflow to push commits
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-factors:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          persist-credentials: true
-          
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -40,5 +39,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
-          directory: '.'
 
