@@ -5,6 +5,9 @@ on:
     - cron: "5 5 * * *"   # every day at 05:05 UTC
   workflow_dispatch:       # allows manual trigger
 
+permissions:
+  contents: write   # <— allow this workflow to push commits
+
 jobs:
   build-factors:
     runs-on: ubuntu-latest
