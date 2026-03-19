@@ -2,3 +2,4 @@ pandas
 numpy
 fredapi
 streamlit
+plotly
