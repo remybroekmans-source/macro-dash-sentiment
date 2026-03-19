@@ -1,42 +1,47 @@
-import pandas as pd
-from utils import compute_zscore, rescale_to_0_100
-
 def build_factors(raw_df: pd.DataFrame):
     df = raw_df.copy().sort_index()
-
-    # Compute z-scores per series
-    z = pd.DataFrame(index=df.index)
+    
+    # Compute z-scores per series (skip if all NaN)
+    z_adj = pd.DataFrame(index=df.index)
     for col in df.columns:
-        z[col] = compute_zscore(df[col])
-
-    # Align direction: positive = risk-supportive
-    # Example:
-    # - higher CLI -> positive, keep as is
-    # - higher unemployment -> negative, flip sign
-    # - higher spreads -> negative, flip sign
-    z_adj = z.copy()
-    z_adj["unemp_rate"] = -z["unemp_rate"]
-    z_adj["baa_spread"] = -z["baa_spread"]
-
-    # Block definitions (simple averages, you can refine)
-    macro_block = z_adj[["cli_oecd", "unemp_rate"]].mean(axis=1)
-    policy_block = z_adj[["term_spread"]].mean(axis=1)   # add policy rate, CB BS later
-    risk_block = z_adj[["baa_spread"]].mean(axis=1)
-
+        if df[col].notna().sum() > 100:  # only if >100 valid points
+            z = compute_zscore(df[col])
+            # Align direction (customize these)
+            if col in ["unemp_rate", "baa_spread"]:
+                z = -z  # higher = worse
+            z_adj[col] = z
+        else:
+            print(f"Skipping {col}: insufficient data")
+    
+    print(f"Using {len(z_adj.columns)} series for factors")
+    
+    # Define blocks (only using available columns)
+    macro_cols = [c for c in ["cli_oecd", "unemp_rate"] if c in z_adj.columns]
+    policy_cols = [c for c in ["term_spread"] if c in z_adj.columns]
+    risk_cols = [c for c in ["baa_spread"] if c in z_adj.columns]
+    
+    macro_block = z_adj[macro_cols].mean(axis=1) if macro_cols else pd.Series(0, index=z_adj.index)
+    policy_block = z_adj[policy_cols].mean(axis=1) if policy_cols else pd.Series(0, index=z_adj.index)
+    risk_block = z_adj[risk_cols].mean(axis=1) if risk_cols else pd.Series(0, index=z_adj.index)
+    
     factors = pd.DataFrame({
         "macro_block": macro_block,
         "policy_block": policy_block,
         "risk_block": risk_block
     })
-
-    # Also keep individual z-scores for drilldown
+    
+    # Add individual z-scores
     for col in z_adj.columns:
         factors[f"z_{col}"] = z_adj[col]
-
-    # Optionally precompute a default 0–100 index with equal weights
-    equal_z = (factors["macro_block"] +
-               factors["policy_block"] +
-               factors["risk_block"]) / 3.0
+    
+    # Drop only rows where ALL blocks are NaN
+    factors = factors.dropna(subset=["macro_block", "policy_block", "risk_block"])
+    
+    # Equal weight sentiment
+    equal_z = (factors["macro_block"] + factors["policy_block"] + factors["risk_block"]) / 3.0
     factors["sentiment_0_100_equal"] = rescale_to_0_100(equal_z)
-
+    
+    print(f"Final factors shape: {factors.shape}")
+    print(f"Date range: {factors.index[0].date()} to {factors.index[-1].date()}")
+    
     return factors
