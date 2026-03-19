@@ -1,5 +1,5 @@
-pandas
-numpy
-fredapi
-streamlit
-plotly
+pandas==2.2.3
+numpy==2.1.1
+fredapi==0.5.2
+streamlit==1.38.0
+altair==5.5.0
