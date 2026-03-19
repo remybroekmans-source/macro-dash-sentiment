@@ -35,8 +35,7 @@ jobs:
           python src/run_daily_pipeline.py
 
       - name: Commit and push data
-        uses: ad-m/github-push-action@master
+        uses: EndBug/add-and-commit@v9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-
+          add: 'data/processed/'
+          message: 'Update daily macro factors'
