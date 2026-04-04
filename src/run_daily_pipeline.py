@@ -18,24 +18,15 @@ def main():
     os.makedirs(DATA_DIR, exist_ok=True)
     print(f"Writing to {DATA_DIR}")
 
-    if len(factors) == 0:
-        print("No factor rows available; writing empty outputs.")
-        empty_df = pd.DataFrame(columns=[
-            "macro_block",
-            "policy_block",
-            "risk_block",
-            "sentiment_0_100_equal"
-        ])
-        empty_df.to_csv(os.path.join(DATA_DIR, "daily_factors.csv"), index=False)
+    factors.to_csv(os.path.join(DATA_DIR, "daily_factors.csv"))
 
+    if len(factors) == 0:
+        print("No factor rows available; writing empty latest output.")
         pd.Series({
             "status": "empty",
             "message": "No valid factor rows were produced."
         }).to_json(os.path.join(DATA_DIR, "latest_factors.json"))
-
         return
-
-    factors.to_csv(os.path.join(DATA_DIR, "daily_factors.csv"))
 
     latest = factors.iloc[-1].to_dict()
     pd.Series(latest).to_json(os.path.join(DATA_DIR, "latest_factors.json"))
