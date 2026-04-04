@@ -46,6 +46,10 @@ def build_factors(raw_df: pd.DataFrame):
     factors["sentiment_0_100_equal"] = rescale_to_0_100(equal_z)
     
     print(f"Final factors shape: {factors.shape}")
-    print(f"Date range: {factors.index[0].date()} to {factors.index[-1].date()}")
-    
+
+    if len(factors) > 0:
+        print(f"Date range: {factors.index[0].date()} to {factors.index[-1].date()}")
+    else:
+        print("No valid factor rows were produced.")
+
     return factors
