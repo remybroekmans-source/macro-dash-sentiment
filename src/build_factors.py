@@ -38,8 +38,9 @@ def build_factors(raw_df: pd.DataFrame):
     for col in z_adj.columns:
         factors[f"z_{col}"] = z_adj[col]
     
-    # Drop only rows where ALL blocks are NaN
-    factors = factors.dropna(subset=["macro_block", "policy_block", "risk_block"])
+    factors["macro_block"] = factors["macro_block"].fillna(0)
+    factors["policy_block"] = factors["policy_block"].fillna(0)
+    factors["risk_block"] = factors["risk_block"].fillna(0)
     
     # Equal weight sentiment
     equal_z = (factors["macro_block"] + factors["policy_block"] + factors["risk_block"]) / 3.0
