@@ -52,4 +52,14 @@ def build_factors(raw_df: pd.DataFrame):
     else:
         print("No valid factor rows were produced.")
 
+    print("Preview of z_adj:")
+    print(z_adj.head())
+
+    print("Preview of factor blocks:")
+    print(factors[["macro_block", "policy_block", "risk_block"]].head(10))
+
+    print("Non-null counts by factor block before filtering:")
+    print(factors[["macro_block", "policy_block", "risk_block"]].notna().sum())
+
+    
     return factors
